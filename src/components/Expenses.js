@@ -14,7 +14,7 @@ import {
 const Expenses = (props) => {
 	const [date, setDate] = useState(new Date());
 	const [isLoading, setIsLoading] = useState(true);
-	const [expense, setExpense] = useState([]);
+	const [expenses, setExpenses] = useState([]);
 	const [categories, setCategories] = useState([]);
 
 	let emptyItem = {
@@ -37,7 +37,7 @@ const Expenses = (props) => {
 	const getExpenses = async () => {
 		const response = await fetch("/api/expenses");
 		const expenses = await response.json();
-		setExpense(expenses);
+		setExpenses(expenses);
 		setIsLoading(false);
 		return expenses;
 	};
@@ -51,8 +51,42 @@ const Expenses = (props) => {
 
 	const handleSubmit = () => {};
 
+	const remove = async (id) => {
+		await fetch(`/api/expenses/${id}`, {
+			method: "DELETE",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+		}).then(() => {
+			let updatedExpenses = [...expenses].filter((item) => item.id !== id);
+			setExpenses(updatedExpenses);
+		});
+	};
+
 	let optionList = categories.map((category) => {
 		return <option key={category.id}>{category.name}</option>;
+	});
+
+	let rows = expenses.map((expense) => {
+		return (
+			<tr>
+				<td>{expense.id}</td>
+				<td>{expense.description}</td>
+				<td>{expense.expensedate}</td>
+				<td>{expense.category.name}</td>
+				<td>{expense.price}</td>
+				<td>
+					<Button
+						size="sm"
+						color="danger"
+						onClick={() => remove(expense.id)}
+					>
+						Delete
+					</Button>
+				</td>
+			</tr>
+		);
 	});
 
 	if (isLoading) return <div>Loading... Please Wait</div>;
@@ -107,21 +141,20 @@ const Expenses = (props) => {
 					</Form>
 				</Container>
 
-				{}
 				<Container>
+					<h2>Expenses</h2>
 					<Table className="mt-4">
 						<thead>
 							<tr>
-								<th width="5%">ID</th>
-                                <th width="30%">Description</th>
-                                <th width="10%">Category</th>
-                                <th width="10%">Expense(Rs)</th>
-                                <th width="">Action</th>
+								<th width="10%">ID</th>
+								<th width="30%">Description</th>
+								<th witdh="10%">Date</th>
+								<th width="20%">Category</th>
+								<th width="10%">Expense(Rs)</th>
+								<th width="10%">Action</th>
 							</tr>
 						</thead>
-                        <tbody>
-                        
-                        </tbody>
+						<tbody>{rows}</tbody>
 					</Table>
 				</Container>
 			</div>
